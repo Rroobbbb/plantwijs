@@ -58,7 +58,7 @@ _CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None}
 # Als je geen env-var zet, gebruikt hij onderstaande URL standaard.
 DATA_URL = os.getenv(
     "PLANTWIJS_DATA_URL",
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJVlLk-gIu6T89zwDA5AAH77eVR21OtzRgoEi_2vllJLx6M9sAe2DsoVk-UcdZqqp7AL3re0qpQ_rH/pub?output=csv"
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJVlLk-gIu6T89zwDA5AAH77eVR21OtzRgoEi_2vllJLx6M9sAe2DsoVk-UcdZqqp7AL3re0qpQ_rH/pub?gid=0&single=true&output=csv"
 ).strip()
 
 # Hoe vaak remote CSV verversen (in seconden)
