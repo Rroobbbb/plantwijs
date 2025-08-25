@@ -985,7 +985,16 @@ body.light .leaflet-control-layers {
     text-shadow:none;
   }
 }
-
+/* Mobiel: tabelheaders sticky, net onder de app-header */
+@media (max-width: 768px){
+  thead th{
+    position: -webkit-sticky; /* iOS Safari */
+    position: sticky;
+    top: 56px;               /* = hoogte van je <header> */
+    z-index: 3;              /* boven de rijen */
+    background: var(--panel);/* solide achtergrond */
+  }
+}
   </style>
 </head>
 <body>
