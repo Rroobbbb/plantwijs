@@ -48,28 +48,24 @@ TX_WGS84_RD = Transformer.from_crs(4326, 28992, always_xy=True)
 TX_WGS84_WEB = Transformer.from_crs(4326, 3857, always_xy=True)
 
 # ───────────────────── Dataset cache
-# ───────────────────── Dataset (remote Google Sheet + fallback + cache)
-# 1) Primair: remote CSV (Google Sheets "Publish to the web")
-# 2) Cache:   schrijf naar /tmp om herhaald downloaden te vermijden
-# 3) Fallback: lokale CSV in /out als aanwezig
-
-# === Configureerbaar via omgevingsvariabelen op Render (optioneel) ===
-REMOTE_CSV = os.environ.get(
-    "PLANTWIJS_CSV",
-    # default = jouw public CSV (Publish to web)
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJVlLk-gIu6T89zwDA5AAH77eVR21OtzRgoEi_2vllJLx6M9sAe2DsoVk-UcdZqqp7AL3re0qpQ_rH/pub?output=csv"
-).strip()
-
-# elke TTL-seconden een nieuwe versie ophalen (anders gebruik cache)
-REMOTE_TTL = int(os.environ.get("PLANTWIJS_CSV_TTL", "900"))  # 15 min
-REMOTE_CACHE = os.environ.get("PLANTWIJS_CACHE", "/tmp/plantwijs_remote.csv")
-
 DATA_PATHS = [
     "out/plantwijs_full_semicolon.csv",
     "out/plantwijs_full.csv",
 ]
-
 _CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None}
+
+# --- Externe dataset (Google Sheets CSV) ---
+# Als je geen env-var zet, gebruikt hij onderstaande URL standaard.
+DATA_URL = os.getenv(
+    "PLANTWIJS_DATA_URL",
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJVlLk-gIu6T89zwDA5AAH77eVR21OtzRgoEi_2vllJLx6M9sAe2DsoVk-UcdZqqp7AL3re0qpQ_rH/pub?output=csv"
+).strip()
+
+# Hoe vaak remote CSV verversen (in seconden)
+DATA_REFRESH_SEC = int(os.getenv("PLANTWIJS_DATA_REFRESH_SEC", "1800"))  # 30 min
+
+# Tijdelijk pad voor de gedownloade CSV
+_REMOTE_TMP = os.path.join(tempfile.gettempdir(), "plantwijs_data.csv")
 
 def _detect_sep(path: str) -> str:
     try:
@@ -79,7 +75,7 @@ def _detect_sep(path: str) -> str:
     except Exception:
         return ";"
 
-def _load_df_from_file(path: str) -> pd.DataFrame:
+def _load_df(path: str) -> pd.DataFrame:
     sep = _detect_sep(path)
     df = pd.read_csv(path, sep=sep, dtype=str, encoding_errors="ignore")
     df.columns = [str(c).strip().lower().replace(" ", "_").replace("-", "_") for c in df.columns]
@@ -95,83 +91,55 @@ def _load_df_from_file(path: str) -> pd.DataFrame:
             df[must] = ""
     return df
 
-def _load_df_from_text(text: str) -> pd.DataFrame:
-    # auto-detect delimiter (python-engine) → werkt voor comma/semicolon
-    df = pd.read_csv(io.StringIO(text), dtype=str, engine="python")
-    df.columns = [str(c).strip().lower().replace(" ", "_").replace("-", "_") for c in df.columns]
-    if "naam" not in df.columns and "nederlandse_naam" in df.columns:
-        df = df.rename(columns={"nederlandse_naam": "naam"})
-    if "wetenschappelijke_naam" not in df.columns:
-        for k in ("taxon", "species"):
-            if k in df.columns:
-                df = df.rename(columns={k: "wetenschappelijke_naam"})
-                break
-    for must in ("standplaats_licht", "vocht", "inheems", "invasief"):
-        if must not in df.columns:
-            df[must] = ""
-    return df
+def _download_if_needed(url: str) -> Optional[str]:
+    """Download CSV naar een temp-bestand en hergebruik tot de refresh-tijd is verstreken.
+    Retourneert het pad naar de lokale cache, of None bij mislukking (zonder cache).
+    """
+    now = time.time()
+    need_download = True
+    if os.path.exists(_REMOTE_TMP):
+        age = now - os.path.getmtime(_REMOTE_TMP)
+        if age < DATA_REFRESH_SEC:
+            need_download = False
 
-def _fetch_remote_df() -> Optional[pd.DataFrame]:
-    if not REMOTE_CSV:
-        return None
+    if need_download:
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=20, stream=True)
+            r.raise_for_status()
+            with open(_REMOTE_TMP, "wb") as f:
+                for chunk in r.iter_content(chunk_size=65536):
+                    if chunk:
+                        f.write(chunk)
+            print(f"[DATA] remote CSV vernieuwd: {url} → {_REMOTE_TMP}")
+        except Exception as e:
+            print(f"[DATA] remote download mislukte ({e}); gebruik bestaande cache indien aanwezig")
+            if not os.path.exists(_REMOTE_TMP):
+                return None
 
-    # gebruik TTL-bucket zodat we niet élke request een nieuwe URL doen
-    ts_bucket = int(time.time() // REMOTE_TTL)
-    url = REMOTE_CSV + ("&" if "?" in REMOTE_CSV else "?") + f"_ts={ts_bucket}"
-
-    # 1) Cache fresh?
-    try:
-        if os.path.exists(REMOTE_CACHE):
-            age = time.time() - os.path.getmtime(REMOTE_CACHE)
-            if age < REMOTE_TTL:
-                return _load_df_from_file(REMOTE_CACHE)
-    except Exception:
-        pass
-
-    # 2) Download
-    try:
-        r = requests.get(
-            url,
-            headers={**HEADERS, "Accept": "text/csv,*/*;q=0.1", "Referer": "https://docs.google.com/"},
-            timeout=20,
-            allow_redirects=True,
-        )
-        r.raise_for_status()
-        # schrijf nieuwe cache
-        os.makedirs(os.path.dirname(REMOTE_CACHE), exist_ok=True)
-        with open(REMOTE_CACHE, "wb") as f:
-            f.write(r.content)
-        return _load_df_from_file(REMOTE_CACHE)
-    except Exception as e:
-        print(f"[DATA] remote download mislukte ({e}); gebruik bestaande cache indien aanwezig")
-
-    # 3) Fallback: probeer oude cache alsnog
-    try:
-        if os.path.exists(REMOTE_CACHE):
-            return _load_df_from_file(REMOTE_CACHE)
-    except Exception:
-        pass
-
-    return None
+    return _REMOTE_TMP if os.path.exists(_REMOTE_TMP) else None
 
 def get_df() -> pd.DataFrame:
-    # Probeer eerst remote (met cache)
-    df = _fetch_remote_df()
-    if df is not None:
-        _CACHE.update({"df": df, "mtime": time.time(), "path": REMOTE_CACHE})
-        print(f"[DATA] geladen uit remote/cache: {len(df)} rijen, {df.shape[1]} kolommen")
-        return df.copy()
+    # 1) Probeer externe URL (Google Sheets CSV)
+    if DATA_URL:
+        path = _download_if_needed(DATA_URL)
+        if not path:
+            raise FileNotFoundError("Kon remote dataset niet laden en er is geen cache.")
+    else:
+        # 2) Fallback: lokale bestanden in de repo
+        path = next((p for p in DATA_PATHS if os.path.exists(p)), None)
+        if not path:
+            raise FileNotFoundError(
+                "Geen dataset gevonden. Commit out/plantwijs_full_semicolon.csv "
+                "of stel PLANTWIJS_DATA_URL in."
+            )
 
-    # Anders: lokale files (als je die ooit meedeployt)
-    for path in DATA_PATHS:
-        if os.path.exists(path):
-            df = _load_df_from_file(path)
-            _CACHE.update({"df": df, "mtime": os.path.getmtime(path), "path": path})
-            print(f"[DATA] geladen lokaal: {path} — {len(df)} rijen, {df.shape[1]} kolommen")
-            return df.copy()
+    m = os.path.getmtime(path)
+    if _CACHE["df"] is None or _CACHE["mtime"] != m or _CACHE["path"] != path:
+        df = _load_df(path)
+        _CACHE.update({"df": df, "mtime": m, "path": path})
+        print(f"[DATA] geladen: {path} — {len(df)} rijen, {df.shape[1]} kolommen")
 
-    # Niets gevonden
-    raise FileNotFoundError("Kon remote dataset niet laden en er is geen cache.")
+    return _CACHE["df"].copy()
 
 # ───────────────────── HTTP utils
 @lru_cache(maxsize=32)
@@ -982,41 +950,6 @@ body.light .leaflet-control-layers {
   .pw-ctl h3 { font-size: 13px; }
   .pw-ctl .sec { font-size: 12px; }
 }
-/* — Legend/Info compact — */
-.pw-legend{ width:220px; padding:8px; }
-.pw-legend h3{ font-size:13px; margin:0 0 4px; }
-.pw-legend .sec{ font-size:12px; line-height:1.35; }
-
-/* Mobiel: ultra-compact & transparant (geen kaders/achtergrond) */
-@media (max-width:768px){
-  .pw-legend{
-    width:auto; max-width:80vw;
-    padding:2px 4px;
-    background:transparent !important;
-    border:0 !important;
-    box-shadow:none !important;
-  }
-  .pw-legend h3{ display:none; }          /* titel verbergen voor extra ruimte */
-  .pw-legend .sec{ font-size:12px; }      /* tekst iets kleiner */
-}
-/* Alleen mobiel: legenda & kaartlagen altijd zwarte tekst (transparante achtergrond) */
-@media (max-width: 768px){
-  /* Info/Legenda control */
-  .pw-ctl,
-  .pw-ctl * {
-    color:#000 !important;
-    text-shadow:none;
-  }
-  /* Items die eerder 'muted' waren */
-  .pw-ctl .muted { color:#000 !important; }
-
-  /* Kaartlagen-schakelaar (Leaflet Layers) */
-  .leaflet-control-layers,
-  .leaflet-control-layers * {
-    color:#000 !important;
-    text-shadow:none;
-  }
-}
 
   </style>
 </head>
@@ -1324,7 +1257,7 @@ setTimeout(fixMapSize, 0);
 
     const InfoCtl = L.Control.extend({
       onAdd: function() {
-        const div = L.DomUtil.create('div', 'pw-ctl pw-legend');
+        const div = L.DomUtil.create('div', 'pw-ctl');
         div.innerHTML = `
           <h3>Legenda & info</h3>
           <div class="sec" id="clickInfo">
@@ -1337,23 +1270,7 @@ setTimeout(fixMapSize, 0);
         return div;
       }
     });
-   // Mobiel? (breder dan 768px = desktop/tablet-landscape)
-function isMobile() {
-  return window.matchMedia('(max-width: 768px)').matches;
-}
-
-// Legend / Info control: mobiel linksonder, desktop rechtsboven
-let infoCtl = new InfoCtl({ position: isMobile() ? 'bottomleft' : 'topright' }).addTo(map);
-
-// Optioneel: als je vensterformaat wijzigt, herplaats control dynamisch
-window.addEventListener('resize', () => {
-  const want = isMobile() ? 'bottomleft' : 'topright';
-  // Alleen als positie verandert, dan even verplaatsen
-  if ((infoCtl && infoCtl.getPosition && infoCtl.getPosition() !== want) || !infoCtl) {
-    if (infoCtl) map.removeControl(infoCtl);
-    infoCtl = new InfoCtl({ position: want }).addTo(map);
-  }
-});
+    const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
     function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
       document.getElementById('uiF').textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
