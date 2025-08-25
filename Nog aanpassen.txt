@@ -1,0 +1,10 @@
+Zoom knoppen en kaartlaagschakelaar ook nog in zwart, altijd zelfde stijl als de rest houden
+
+
+Uiteindelijk: 
+selecteren op landschap en tuin
+
+
+
+cd C:\PlantWijs
+venv\Scripts\uvicorn api:app --reload --port 9000

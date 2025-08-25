@@ -1,0 +1,23 @@
+# Python / venv
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+
+# Lokale omgeving
+.env
+
+# Uitvoer en lokale data (houd alleen de mapstructuur met .gitkeep)
+out/*
+!out/.gitkeep
+data/*
+!data/.gitkeep
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
