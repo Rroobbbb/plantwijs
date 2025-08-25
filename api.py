@@ -921,6 +921,35 @@ body.light .leaflet-control-zoom,
 body.light .leaflet-control-layers {
   box-shadow: 0 2px 12px rgba(0,0,0,.12);
 }
+/* --- Responsive tuning voor Leaflet controls --- */
+.leaflet-control { font-size: 13px; }
+.leaflet-control-layers { max-width: 360px; }
+.leaflet-control-layers-expanded {
+  width: clamp(220px, 80vw, 360px);
+  max-height: 45vh;
+  overflow: auto;
+}
+
+/* Mobiel: compact, niet overlappen */
+@media (max-width: 768px) {
+  /* randen wat dichter op het scherm */
+  .leaflet-top.leaflet-right  { margin-right: 8px; }
+  .leaflet-top.leaflet-left   { margin-left:  8px; }
+  .leaflet-bottom.leaflet-right,
+  .leaflet-bottom.leaflet-left { margin-bottom: 8px; }
+
+  /* kleinere zoomknoppen */
+  .leaflet-control-zoom a { width: 32px; height: 32px; line-height: 32px; }
+
+  /* zoekcontrol smaller */
+  .pw-search { width: min(92vw, 320px); padding: 6px; }
+  .pw-search input { padding: 6px 8px; }
+
+  /* legenda & info compacter */
+  .pw-ctl { width: min(70vw, 240px); padding: 8px; }
+  .pw-ctl h3 { font-size: 13px; }
+  .pw-ctl .sec { font-size: 12px; }
+}
 
   </style>
 </head>
@@ -1006,7 +1035,12 @@ body.light .leaflet-control-layers {
   </div>
 
   <script>
-    const map = L.map('map').setView([52.1, 5.3], 8);
+  const map = L.map('map').setView([52.1, 5.3], 8);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+
+  // ⬇️ NIEUW: simpele mobiele-vlag
+  const IS_MOBILE = window.matchMedia('(max-width: 768px)').matches;
+
     // Zorg dat Leaflet z'n grootte herkent bij layout/rotatie
 function fixMapSize(){ setTimeout(()=> map.invalidateSize(), 60); }
 window.addEventListener('resize', fixMapSize);
@@ -1236,7 +1270,7 @@ setTimeout(fixMapSize, 0);
         return div;
       }
     });
-    const infoCtl = new InfoCtl({ position:'topright' }).addTo(map);
+    const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
     function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
       document.getElementById('uiF').textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
@@ -1252,7 +1286,15 @@ setTimeout(fixMapSize, 0);
       overlays['BRO Grondwatertrappen (Gt)']    = make(ui.meta.gt,    0.45).addTo(map);
       overlays["Fysisch Geografische Regio's"]  = make(ui.meta.fgr,   0.45).addTo(map);
 
-      const ctlLayers = L.control.layers({}, overlays, { collapsed:false, position:'bottomleft' }).addTo(map);
+      const ctlLayers = L.control.layers(
+  {},
+  overlays,
+  {
+    collapsed: IS_MOBILE,                  // mobiel: ingeklapt icoon
+    position: IS_MOBILE ? 'topright' : 'bottomleft'
+  }
+).addTo(map);
+
       const cont = ctlLayers.getContainer();
       const baseList = cont.querySelector('.leaflet-control-layers-base'); if(baseList) baseList.remove();
       const sep = cont.querySelector('.leaflet-control-layers-separator'); if(sep) sep.remove();
