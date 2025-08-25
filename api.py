@@ -985,25 +985,6 @@ body.light .leaflet-control-layers {
     text-shadow:none;
   }
 }
-/* ===== Sticky table headers - mobiel veilig ===== */
-:root { --headH: 56px; }  /* fallback; JS zet dit exact */
-
-@media (max-width: 768px){
-  /* zorg voor scrollcontainer */
-  .panel-right{
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* alleen de header plakken onder de app-header */
-  #tbl thead th{
-    position: -webkit-sticky; /* iOS Safari */
-    position: sticky;
-    top: var(--headH);         /* hoogte van <header>, komt uit JS */
-    z-index: 3;
-    background: var(--panel);  /* solide achtergrond */
-  }
-}
 
   </style>
 </head>
@@ -1089,16 +1070,6 @@ body.light .leaflet-control-layers {
   </div>
 
   <script>
-
-  /* Houd de CSS-variabele --headH gelijk aan de echte headerhoogte */
-  (function(){
-    function setHeadH(){
-      const h = document.querySelector('header')?.offsetHeight || 56;
-      document.documentElement.style.setProperty('--headH', h + 'px');
-    }
-    setHeadH();
-    window.addEventListener('resize', setHeadH);
-  })();
   const map = L.map('map').setView([52.1, 5.3], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
