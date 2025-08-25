@@ -950,6 +950,23 @@ body.light .leaflet-control-layers {
   .pw-ctl h3 { font-size: 13px; }
   .pw-ctl .sec { font-size: 12px; }
 }
+/* — Legend/Info compact — */
+.pw-legend{ width:220px; padding:8px; }
+.pw-legend h3{ font-size:13px; margin:0 0 4px; }
+.pw-legend .sec{ font-size:12px; line-height:1.35; }
+
+/* Mobiel: ultra-compact & transparant (geen kaders/achtergrond) */
+@media (max-width:768px){
+  .pw-legend{
+    width:auto; max-width:80vw;
+    padding:2px 4px;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+  }
+  .pw-legend h3{ display:none; }          /* titel verbergen voor extra ruimte */
+  .pw-legend .sec{ font-size:12px; }      /* tekst iets kleiner */
+}
 
   </style>
 </head>
@@ -1257,7 +1274,7 @@ setTimeout(fixMapSize, 0);
 
     const InfoCtl = L.Control.extend({
       onAdd: function() {
-        const div = L.DomUtil.create('div', 'pw-ctl');
+        const div = L.DomUtil.create('div', 'pw-ctl pw-legend');
         div.innerHTML = `
           <h3>Legenda & info</h3>
           <div class="sec" id="clickInfo">
@@ -1270,7 +1287,23 @@ setTimeout(fixMapSize, 0);
         return div;
       }
     });
-    const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
+   // Mobiel? (breder dan 768px = desktop/tablet-landscape)
+function isMobile() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+// Legend / Info control: mobiel linksonder, desktop rechtsboven
+let infoCtl = new InfoCtl({ position: isMobile() ? 'bottomleft' : 'topright' }).addTo(map);
+
+// Optioneel: als je vensterformaat wijzigt, herplaats control dynamisch
+window.addEventListener('resize', () => {
+  const want = isMobile() ? 'bottomleft' : 'topright';
+  // Alleen als positie verandert, dan even verplaatsen
+  if ((infoCtl && infoCtl.getPosition && infoCtl.getPosition() !== want) || !infoCtl) {
+    if (infoCtl) map.removeControl(infoCtl);
+    infoCtl = new InfoCtl({ position: want }).addTo(map);
+  }
+});
 
     function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
       document.getElementById('uiF').textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
