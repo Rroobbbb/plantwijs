@@ -967,6 +967,24 @@ body.light .leaflet-control-layers {
   .pw-legend h3{ display:none; }          /* titel verbergen voor extra ruimte */
   .pw-legend .sec{ font-size:12px; }      /* tekst iets kleiner */
 }
+/* Alleen mobiel: legenda & kaartlagen altijd zwarte tekst (transparante achtergrond) */
+@media (max-width: 768px){
+  /* Info/Legenda control */
+  .pw-ctl,
+  .pw-ctl * {
+    color:#000 !important;
+    text-shadow:none;
+  }
+  /* Items die eerder 'muted' waren */
+  .pw-ctl .muted { color:#000 !important; }
+
+  /* Kaartlagen-schakelaar (Leaflet Layers) */
+  .leaflet-control-layers,
+  .leaflet-control-layers * {
+    color:#000 !important;
+    text-shadow:none;
+  }
+}
 
   </style>
 </head>
