@@ -747,9 +747,51 @@ def index() -> str:
     body { margin:0; font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--fg); }
     header { padding:10px 14px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:10; display:flex; gap:10px; align-items:center; justify-content:space-between; }
     header h1 { margin:0; font-size:18px; }
-    .wrap { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px; height:calc(100vh - 56px); }
-    #map { height:100%; border-radius:12px; border:1px solid var(--border); box-shadow:0 0 0 1px rgba(255,255,255,.05) inset; position:relative; }
-    .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px; }
+   /* Mobile-first: 1 kolom, map bovenaan, paneel eronder */
+.wrap {
+  display:grid;
+  grid-template-columns:1fr;
+  grid-auto-rows:auto;
+  gap:12px;
+  padding:12px;
+  /* geen geforceerde vaste hoogte op mobiel; laat de pagina scrollen */
+  min-height:calc(100vh - 56px);
+}
+
+/* Map: op mobiel ~halve viewport hoogte */
+#map {
+  height:55vh;               /* prettige hoogte op mobiel */
+  min-height:320px;          /* zodat het nooit te klein wordt */
+  border-radius:12px;
+  border:1px solid var(--border);
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset;
+  position:relative;
+}
+
+/* Paneel: op mobiel gewoon mee in de flow */
+.panel-right {
+  height:auto;
+  overflow:visible;
+}
+
+/* Zoekbalk control: breedte schaalt mee op mobiel */
+.pw-search { width:min(92vw, 320px); margin:8px 8px 0 8px; }
+
+/* Vanaf 900px → 2 kolommen en full-height layout zoals desktop */
+@media (min-width: 900px) {
+  .wrap {
+    grid-template-columns:1fr 1fr;
+    height:calc(100vh - 56px);
+  }
+  #map { height:100%; }
+  .panel-right { height:100%; overflow:auto; }
+}
+
+/* Extra: op hele brede schermen map iets breder dan paneel */
+@media (min-width: 1400px) {
+  .wrap { grid-template-columns:1.2fr 1fr; }
+}
+
     .panel-right { height:100%; overflow:auto; }
     .muted { color:var(--muted); }
 
@@ -965,6 +1007,13 @@ body.light .leaflet-control-layers {
 
   <script>
     const map = L.map('map').setView([52.1, 5.3], 8);
+    // Zorg dat Leaflet z'n grootte herkent bij layout/rotatie
+function fixMapSize(){ setTimeout(()=> map.invalidateSize(), 60); }
+window.addEventListener('resize', fixMapSize);
+window.addEventListener('orientationchange', fixMapSize);
+// eerste keer na opbouwen
+setTimeout(fixMapSize, 0);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
     let overlays = {};
