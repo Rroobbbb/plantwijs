@@ -974,33 +974,6 @@ body.light .leaflet-control-layers {
   .pw-ctl h3 { font-size: 13px; }
   .pw-ctl .sec { font-size: 12px; }
 }
-/* ——— Mobile layout (≤768px) ——— */
-.legend-inline{ display:none; }  /* default verborgen; alleen mobiel tonen */
-@media (max-width: 768px){
-  .wrap { grid-template-columns: 1fr; height:auto; }
-  #map { height: 62vh; }
-
-  /* zoekbalk compacter linksboven */
-  .pw-search { width: 210px; padding:6px; border-radius:8px; }
-  .pw-search input { padding:5px 7px; font-size:14px; }
-
-  /* verberg de zwevende legenda op de kaart */
-  .leaflet-control.pw-ctl { display:none; }
-
-  /* toon de legenda onder de kaart als paneel */
-  .legend-inline{ display:block; margin:10px 0 14px; }
-
-  /* wat lucht aan de randen van knoppen */
-  .leaflet-control { margin: 8px; }
-}
-/* Mobiel: verberg de in-kaart legenda (InfoCtl) */
-@media (max-width: 768px){
-  .leaflet-control.pw-ctl { display: none !important; }
-}
-/* Mobiel: verberg de in-kaart legenda (InfoCtl) */
-@media (max-width: 768px){
-  .leaflet-control.pw-ctl { display: none !important; }
-}
 
   </style>
 </head>
@@ -1010,17 +983,8 @@ body.light .leaflet-control-layers {
     <button id="btnTheme" class="btn-ghost" title="Schakel licht/donker">🌓 Thema</button>
   </header>
 
- <div class="wrap">
-  <div id="map"></div>
-
- <div id="legendMobile" class="panel panel-legend">
-  <h3>Legenda & info</h3>
-  <div class="sec">
-    <div id="mUiF">Fysisch Geografische Regio's: —</div>
-    <div id="mUiB">Bodem: —</div>
-    <div id="mUiG">Gt: —</div>
-  </div>
-</div>
+  <div class="wrap">
+    <div id="map"></div>
 
     <div class="panel panel-right">
       <div class="filters">
@@ -1095,11 +1059,7 @@ body.light .leaflet-control-layers {
   </div>
 
   <script>
- L.control.zoom({ position: 'bottomleft' }).addTo(map);
-  const isMobile = window.matchMedia('(max-width: 768px)').matches;
-// Zoomknoppen linksonder op mobiel
-if (isMobile) map.zoomControl.setPosition('bottomleft');
-
+  const map = L.map('map').setView([52.1, 5.3], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
   // ⬇️ NIEUW: simpele mobiele-vlag
@@ -1336,37 +1296,12 @@ setTimeout(fixMapSize, 0);
     });
     const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
-function setClickInfo({ fgr, bodem, bodem_bron, gt, vocht }) {
-  const fTxt = "Fysisch Geografische Regio's: " + (fgr || '—');
-  const bTxt = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
-  const gTxt = 'Gt: ' + ((gt || '—') + (vocht ? ` → ${vocht}` : ''));
-
-  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-
-  // legenda IN de kaart (desktop)
-  setTxt('uiF', fTxt); setTxt('uiB', bTxt); setTxt('uiG', gTxt);
-  // legenda ONDER de kaart (mobiel)
-  setTxt('uiF2', fTxt); setTxt('uiB2', bTxt); setTxt('uiG2', gTxt);
-}
-
-  // in-kaart paneel (desktop)
-  write('#uiF', lineF);
-  write('#uiB', lineB);
-  write('#uiG', lineG);
-
-  // mobiele legenda onder de kaart
-  write('#mUiF, .mUiF', lineF);
-  write('#mUiB, .mUiB', lineB);
-  write('#mUiG, .mUiG', lineG);
-}
-
-  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-
-  // in-kaart legenda (desktop)
-  set('uiF', tF); set('uiB', tB); set('uiG', tG);
-  // mobiele legenda onder de kaart
-  set('uiF_m', tF); set('uiB_m', tB); set('uiG_m', tG);
-}
+    function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
+      document.getElementById('uiF').textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
+      const btxt = (bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : '');
+      document.getElementById('uiB').textContent = 'Bodem: ' + btxt;
+      document.getElementById('uiG').textContent = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
+    }
 
     async function loadWms(){
       ui.meta = await (await fetch('/api/wms_meta')).json();
@@ -1375,12 +1310,16 @@ function setClickInfo({ fgr, bodem, bodem_bron, gt, vocht }) {
       overlays['BRO Grondwatertrappen (Gt)']    = make(ui.meta.gt,    0.45).addTo(map);
       overlays["Fysisch Geografische Regio's"]  = make(ui.meta.fgr,   0.45).addTo(map);
 
-const ctlLayers = L.control.layers({}, overlays, { collapsed:true, position:'bottomleft' }).addTo(map);
-
-
+      const ctlLayers = L.control.layers(
+  {},
+  overlays,
+  {
+    collapsed: IS_MOBILE,                  // mobiel: ingeklapt icoon
+    position: IS_MOBILE ? 'topright' : 'bottomleft'
+  }
+).addTo(map);
 
       const cont = ctlLayers.getContainer();
-      cont.classList.remove('leaflet-control-layers-expanded');
       const baseList = cont.querySelector('.leaflet-control-layers-base'); if(baseList) baseList.remove();
       const sep = cont.querySelector('.leaflet-control-layers-separator'); if(sep) sep.remove();
       const overlaysList = cont.querySelector('.leaflet-control-layers-overlays');
