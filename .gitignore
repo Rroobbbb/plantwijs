@@ -21,3 +21,11 @@ data/*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Ignore alles in out/, behalve de twee CSV's die we willen publiceren
+out/**
+!out/
+!out/plantwijs_full.csv
+!out/plantwijs_full_semicolon.csv
+
+# (rest van je ignore mag blijven staan)

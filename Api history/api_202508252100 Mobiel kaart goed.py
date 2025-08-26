@@ -52,27 +52,20 @@ DATA_PATHS = [
     "out/plantwijs_full_semicolon.csv",
     "out/plantwijs_full.csv",
 ]
-
-# Online CSV (GitHub raw) fallback
-ONLINE_CSV_URLS = [
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full_semicolon.csv",
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full.csv",
-]
-
-_CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None, "source": None}
-
-# ───────────────────── Dataset cache
-DATA_PATHS = [
-    "out/plantwijs_full_semicolon.csv",
-    "out/plantwijs_full.csv",
-]
 _CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None}
 
-# Online CSV fallback (GitHub raw)
-ONLINE_CSV_URLS = [
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full.csv",
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full_semicolon.csv",
-]
+# --- Externe dataset (Google Sheets CSV) ---
+# Als je geen env-var zet, gebruikt hij onderstaande URL standaard.
+DATA_URL = os.getenv(
+    "PLANTWIJS_DATA_URL",
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJVlLk-gIu6T89zwDA5AAH77eVR21OtzRgoEi_2vllJLx6M9sAe2DsoVk-UcdZqqp7AL3re0qpQ_rH/pub?output=csv"
+).strip()
+
+# Hoe vaak remote CSV verversen (in seconden)
+DATA_REFRESH_SEC = int(os.getenv("PLANTWIJS_DATA_REFRESH_SEC", "1800"))  # 30 min
+
+# Tijdelijk pad voor de gedownloade CSV
+_REMOTE_TMP = os.path.join(tempfile.gettempdir(), "plantwijs_data.csv")
 
 def _detect_sep(path: str) -> str:
     try:
@@ -98,73 +91,56 @@ def _load_df(path: str) -> pd.DataFrame:
             df[must] = ""
     return df
 
-def _fetch_csv_online(url: str) -> Optional[pd.DataFrame]:
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
-        if r.status_code != 200:
-            return None
-        text = r.content.decode("utf-8", errors="ignore")
-        sep = ";" if text.count(";") >= text.count(",") else ","
-        df = pd.read_csv(io.StringIO(text), sep=sep, dtype=str, encoding_errors="ignore")
-        df.columns = [str(c).strip().lower().replace(" ", "_").replace("-", "_") for c in df.columns]
-        if "naam" not in df.columns and "nederlandse_naam" in df.columns:
-            df = df.rename(columns={"nederlandse_naam": "naam"})
-        if "wetenschappelijke_naam" not in df.columns:
-            for k in ("taxon", "species"):
-                if k in df.columns:
-                    df = df.rename(columns={k: "wetenschappelijke_naam"})
-                    break
-        for must in ("standplaats_licht", "vocht", "inheems", "invasief"):
-            if must not in df.columns:
-                df[must] = ""
-        return df
-    except Exception as e:
-        print("[ONLINE CSV] fout bij", url, "→", e)
-        return None
+def _download_if_needed(url: str) -> Optional[str]:
+    """Download CSV naar een temp-bestand en hergebruik tot de refresh-tijd is verstreken.
+    Retourneert het pad naar de lokale cache, of None bij mislukking (zonder cache).
+    """
+    now = time.time()
+    need_download = True
+    if os.path.exists(_REMOTE_TMP):
+        age = now - os.path.getmtime(_REMOTE_TMP)
+        if age < DATA_REFRESH_SEC:
+            need_download = False
+
+    if need_download:
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=20, stream=True)
+            r.raise_for_status()
+            with open(_REMOTE_TMP, "wb") as f:
+                for chunk in r.iter_content(chunk_size=65536):
+                    if chunk:
+                        f.write(chunk)
+            print(f"[DATA] remote CSV vernieuwd: {url} → {_REMOTE_TMP}")
+        except Exception as e:
+            print(f"[DATA] remote download mislukte ({e}); gebruik bestaande cache indien aanwezig")
+            if not os.path.exists(_REMOTE_TMP):
+                return None
+
+    return _REMOTE_TMP if os.path.exists(_REMOTE_TMP) else None
 
 def get_df() -> pd.DataFrame:
-    # 1) Probeer lokaal (development)
-    path = next((p for p in DATA_PATHS if os.path.exists(p)), None)
-    if path:
-        m = os.path.getmtime(path)
-        if _CACHE["df"] is None or _CACHE["mtime"] != m or _CACHE["path"] != path:
-            df = _load_df(path)
-            _CACHE.update({"df": df, "mtime": m, "path": path, "source": "local"})
-            print(f"[DATA] geladen (lokaal): {path} — {len(df)} rijen, {df.shape[1]} kolommen")
-        return _CACHE["df"].copy()
+    # 1) Probeer externe URL (Google Sheets CSV)
+    if DATA_URL:
+        path = _download_if_needed(DATA_URL)
+        if not path:
+            raise FileNotFoundError("Kon remote dataset niet laden en er is geen cache.")
+    else:
+        # 2) Fallback: lokale bestanden in de repo
+        path = next((p for p in DATA_PATHS if os.path.exists(p)), None)
+        if not path:
+            raise FileNotFoundError(
+                "Geen dataset gevonden. Commit out/plantwijs_full_semicolon.csv "
+                "of stel PLANTWIJS_DATA_URL in."
+            )
 
-    # 2) Fallback: online CSV (GitHub raw)
-    if _CACHE["df"] is not None and _CACHE.get("source") == "online":
-        return _CACHE["df"].copy()
+    m = os.path.getmtime(path)
+    if _CACHE["df"] is None or _CACHE["mtime"] != m or _CACHE["path"] != path:
+        df = _load_df(path)
+        _CACHE.update({"df": df, "mtime": m, "path": path})
+        print(f"[DATA] geladen: {path} — {len(df)} rijen, {df.shape[1]} kolommen")
 
-    for url in ONLINE_CSV_URLS:
-        df = _fetch_csv_online(url)
-        if df is not None and not df.empty:
-            _CACHE.update({"df": df, "mtime": time.time(), "path": url, "source": "online"})
-            print(f"[DATA] geladen (online): {url} — {len(df)} rijen, {df.shape[1]} kolommen")
-            return _CACHE["df"].copy()
+    return _CACHE["df"].copy()
 
-    # 3) Niets gevonden → duidelijke foutmelding
-    raise FileNotFoundError(
-        "Geen dataset gevonden. Lokaal ontbreekt out/plantwijs_full.csv én online CSV kon niet worden opgehaald."
-    )
-
-    # 2) Fallback: online CSV (GitHub raw)
-    if _CACHE["df"] is not None and _CACHE.get("source") == "online":
-        return _CACHE["df"].copy()
-
-    for url in ONLINE_CSV_URLS:
-        df = _fetch_csv_online(url)
-        if df is not None and not df.empty:
-            _CACHE.update({"df": df, "mtime": time.time(), "path": url, "source": "online"})
-            print(f"[DATA] geladen (online): {url} — {len(df)} rijen, {df.shape[1]} kolommen")
-            return _CACHE["df"].copy()
-
-    # 3) Niets gevonden → duidelijke foutmelding
-    raise FileNotFoundError(
-        "Geen dataset gevonden. Lokaal ontbreekt out/plantwijs_full.csv én online CSV kon niet worden opgehaald."
-    )
-    
 # ───────────────────── HTTP utils
 @lru_cache(maxsize=32)
 def _get(url: str) -> requests.Response:
@@ -755,7 +731,7 @@ def advies_geo(
 
 # ───────────────────── UI
 @app.get("/", response_class=HTMLResponse)
-def index() -> HTMLResponse:
+def index() -> str:
     html = '''
 <!doctype html>
 <html lang=nl>
@@ -973,6 +949,41 @@ body.light .leaflet-control-layers {
   .pw-ctl { width: min(70vw, 240px); padding: 8px; }
   .pw-ctl h3 { font-size: 13px; }
   .pw-ctl .sec { font-size: 12px; }
+}
+/* — Legend/Info compact — */
+.pw-legend{ width:220px; padding:8px; }
+.pw-legend h3{ font-size:13px; margin:0 0 4px; }
+.pw-legend .sec{ font-size:12px; line-height:1.35; }
+
+/* Mobiel: ultra-compact & transparant (geen kaders/achtergrond) */
+@media (max-width:768px){
+  .pw-legend{
+    width:auto; max-width:80vw;
+    padding:2px 4px;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+  }
+  .pw-legend h3{ display:none; }          /* titel verbergen voor extra ruimte */
+  .pw-legend .sec{ font-size:12px; }      /* tekst iets kleiner */
+}
+/* Alleen mobiel: legenda & kaartlagen altijd zwarte tekst (transparante achtergrond) */
+@media (max-width: 768px){
+  /* Info/Legenda control */
+  .pw-ctl,
+  .pw-ctl * {
+    color:#000 !important;
+    text-shadow:none;
+  }
+  /* Items die eerder 'muted' waren */
+  .pw-ctl .muted { color:#000 !important; }
+
+  /* Kaartlagen-schakelaar (Leaflet Layers) */
+  .leaflet-control-layers,
+  .leaflet-control-layers * {
+    color:#000 !important;
+    text-shadow:none;
+  }
 }
 
   </style>
@@ -1281,7 +1292,7 @@ setTimeout(fixMapSize, 0);
 
     const InfoCtl = L.Control.extend({
       onAdd: function() {
-        const div = L.DomUtil.create('div', 'pw-ctl');
+        const div = L.DomUtil.create('div', 'pw-ctl pw-legend');
         div.innerHTML = `
           <h3>Legenda & info</h3>
           <div class="sec" id="clickInfo">
@@ -1294,7 +1305,23 @@ setTimeout(fixMapSize, 0);
         return div;
       }
     });
-    const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
+   // Mobiel? (breder dan 768px = desktop/tablet-landscape)
+function isMobile() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+// Legend / Info control: mobiel linksonder, desktop rechtsboven
+let infoCtl = new InfoCtl({ position: isMobile() ? 'bottomleft' : 'topright' }).addTo(map);
+
+// Optioneel: als je vensterformaat wijzigt, herplaats control dynamisch
+window.addEventListener('resize', () => {
+  const want = isMobile() ? 'bottomleft' : 'topright';
+  // Alleen als positie verandert, dan even verplaatsen
+  if ((infoCtl && infoCtl.getPosition && infoCtl.getPosition() !== want) || !infoCtl) {
+    if (infoCtl) map.removeControl(infoCtl);
+    infoCtl = new InfoCtl({ position: want }).addTo(map);
+  }
+});
 
     function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
       document.getElementById('uiF').textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
@@ -1625,11 +1652,4 @@ setTimeout(fixMapSize, 0);
 </body>
 </html>
 '''
-    return HTMLResponse(
-        content=html,
-        headers={
-            "Cache-Control": "no-store, max-age=0, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        },
-    )
+    return html

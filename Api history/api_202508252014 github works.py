@@ -52,27 +52,20 @@ DATA_PATHS = [
     "out/plantwijs_full_semicolon.csv",
     "out/plantwijs_full.csv",
 ]
-
-# Online CSV (GitHub raw) fallback
-ONLINE_CSV_URLS = [
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full_semicolon.csv",
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full.csv",
-]
-
-_CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None, "source": None}
-
-# ───────────────────── Dataset cache
-DATA_PATHS = [
-    "out/plantwijs_full_semicolon.csv",
-    "out/plantwijs_full.csv",
-]
 _CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None}
 
-# Online CSV fallback (GitHub raw)
-ONLINE_CSV_URLS = [
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full.csv",
-    "https://raw.githubusercontent.com/Rroobbbb/plantwijs/main/out/plantwijs_full_semicolon.csv",
-]
+# --- Externe dataset (Google Sheets CSV) ---
+# Als je geen env-var zet, gebruikt hij onderstaande URL standaard.
+DATA_URL = os.getenv(
+    "PLANTWIJS_DATA_URL",
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJVlLk-gIu6T89zwDA5AAH77eVR21OtzRgoEi_2vllJLx6M9sAe2DsoVk-UcdZqqp7AL3re0qpQ_rH/pub?output=csv"
+).strip()
+
+# Hoe vaak remote CSV verversen (in seconden)
+DATA_REFRESH_SEC = int(os.getenv("PLANTWIJS_DATA_REFRESH_SEC", "1800"))  # 30 min
+
+# Tijdelijk pad voor de gedownloade CSV
+_REMOTE_TMP = os.path.join(tempfile.gettempdir(), "plantwijs_data.csv")
 
 def _detect_sep(path: str) -> str:
     try:
@@ -98,73 +91,56 @@ def _load_df(path: str) -> pd.DataFrame:
             df[must] = ""
     return df
 
-def _fetch_csv_online(url: str) -> Optional[pd.DataFrame]:
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
-        if r.status_code != 200:
-            return None
-        text = r.content.decode("utf-8", errors="ignore")
-        sep = ";" if text.count(";") >= text.count(",") else ","
-        df = pd.read_csv(io.StringIO(text), sep=sep, dtype=str, encoding_errors="ignore")
-        df.columns = [str(c).strip().lower().replace(" ", "_").replace("-", "_") for c in df.columns]
-        if "naam" not in df.columns and "nederlandse_naam" in df.columns:
-            df = df.rename(columns={"nederlandse_naam": "naam"})
-        if "wetenschappelijke_naam" not in df.columns:
-            for k in ("taxon", "species"):
-                if k in df.columns:
-                    df = df.rename(columns={k: "wetenschappelijke_naam"})
-                    break
-        for must in ("standplaats_licht", "vocht", "inheems", "invasief"):
-            if must not in df.columns:
-                df[must] = ""
-        return df
-    except Exception as e:
-        print("[ONLINE CSV] fout bij", url, "→", e)
-        return None
+def _download_if_needed(url: str) -> Optional[str]:
+    """Download CSV naar een temp-bestand en hergebruik tot de refresh-tijd is verstreken.
+    Retourneert het pad naar de lokale cache, of None bij mislukking (zonder cache).
+    """
+    now = time.time()
+    need_download = True
+    if os.path.exists(_REMOTE_TMP):
+        age = now - os.path.getmtime(_REMOTE_TMP)
+        if age < DATA_REFRESH_SEC:
+            need_download = False
+
+    if need_download:
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=20, stream=True)
+            r.raise_for_status()
+            with open(_REMOTE_TMP, "wb") as f:
+                for chunk in r.iter_content(chunk_size=65536):
+                    if chunk:
+                        f.write(chunk)
+            print(f"[DATA] remote CSV vernieuwd: {url} → {_REMOTE_TMP}")
+        except Exception as e:
+            print(f"[DATA] remote download mislukte ({e}); gebruik bestaande cache indien aanwezig")
+            if not os.path.exists(_REMOTE_TMP):
+                return None
+
+    return _REMOTE_TMP if os.path.exists(_REMOTE_TMP) else None
 
 def get_df() -> pd.DataFrame:
-    # 1) Probeer lokaal (development)
-    path = next((p for p in DATA_PATHS if os.path.exists(p)), None)
-    if path:
-        m = os.path.getmtime(path)
-        if _CACHE["df"] is None or _CACHE["mtime"] != m or _CACHE["path"] != path:
-            df = _load_df(path)
-            _CACHE.update({"df": df, "mtime": m, "path": path, "source": "local"})
-            print(f"[DATA] geladen (lokaal): {path} — {len(df)} rijen, {df.shape[1]} kolommen")
-        return _CACHE["df"].copy()
+    # 1) Probeer externe URL (Google Sheets CSV)
+    if DATA_URL:
+        path = _download_if_needed(DATA_URL)
+        if not path:
+            raise FileNotFoundError("Kon remote dataset niet laden en er is geen cache.")
+    else:
+        # 2) Fallback: lokale bestanden in de repo
+        path = next((p for p in DATA_PATHS if os.path.exists(p)), None)
+        if not path:
+            raise FileNotFoundError(
+                "Geen dataset gevonden. Commit out/plantwijs_full_semicolon.csv "
+                "of stel PLANTWIJS_DATA_URL in."
+            )
 
-    # 2) Fallback: online CSV (GitHub raw)
-    if _CACHE["df"] is not None and _CACHE.get("source") == "online":
-        return _CACHE["df"].copy()
+    m = os.path.getmtime(path)
+    if _CACHE["df"] is None or _CACHE["mtime"] != m or _CACHE["path"] != path:
+        df = _load_df(path)
+        _CACHE.update({"df": df, "mtime": m, "path": path})
+        print(f"[DATA] geladen: {path} — {len(df)} rijen, {df.shape[1]} kolommen")
 
-    for url in ONLINE_CSV_URLS:
-        df = _fetch_csv_online(url)
-        if df is not None and not df.empty:
-            _CACHE.update({"df": df, "mtime": time.time(), "path": url, "source": "online"})
-            print(f"[DATA] geladen (online): {url} — {len(df)} rijen, {df.shape[1]} kolommen")
-            return _CACHE["df"].copy()
+    return _CACHE["df"].copy()
 
-    # 3) Niets gevonden → duidelijke foutmelding
-    raise FileNotFoundError(
-        "Geen dataset gevonden. Lokaal ontbreekt out/plantwijs_full.csv én online CSV kon niet worden opgehaald."
-    )
-
-    # 2) Fallback: online CSV (GitHub raw)
-    if _CACHE["df"] is not None and _CACHE.get("source") == "online":
-        return _CACHE["df"].copy()
-
-    for url in ONLINE_CSV_URLS:
-        df = _fetch_csv_online(url)
-        if df is not None and not df.empty:
-            _CACHE.update({"df": df, "mtime": time.time(), "path": url, "source": "online"})
-            print(f"[DATA] geladen (online): {url} — {len(df)} rijen, {df.shape[1]} kolommen")
-            return _CACHE["df"].copy()
-
-    # 3) Niets gevonden → duidelijke foutmelding
-    raise FileNotFoundError(
-        "Geen dataset gevonden. Lokaal ontbreekt out/plantwijs_full.csv én online CSV kon niet worden opgehaald."
-    )
-    
 # ───────────────────── HTTP utils
 @lru_cache(maxsize=32)
 def _get(url: str) -> requests.Response:
@@ -755,7 +731,7 @@ def advies_geo(
 
 # ───────────────────── UI
 @app.get("/", response_class=HTMLResponse)
-def index() -> HTMLResponse:
+def index() -> str:
     html = '''
 <!doctype html>
 <html lang=nl>
@@ -771,51 +747,9 @@ def index() -> HTMLResponse:
     body { margin:0; font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--fg); }
     header { padding:10px 14px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:10; display:flex; gap:10px; align-items:center; justify-content:space-between; }
     header h1 { margin:0; font-size:18px; }
-   /* Mobile-first: 1 kolom, map bovenaan, paneel eronder */
-.wrap {
-  display:grid;
-  grid-template-columns:1fr;
-  grid-auto-rows:auto;
-  gap:12px;
-  padding:12px;
-  /* geen geforceerde vaste hoogte op mobiel; laat de pagina scrollen */
-  min-height:calc(100vh - 56px);
-}
-
-/* Map: op mobiel ~halve viewport hoogte */
-#map {
-  height:55vh;               /* prettige hoogte op mobiel */
-  min-height:320px;          /* zodat het nooit te klein wordt */
-  border-radius:12px;
-  border:1px solid var(--border);
-  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset;
-  position:relative;
-}
-
-/* Paneel: op mobiel gewoon mee in de flow */
-.panel-right {
-  height:auto;
-  overflow:visible;
-}
-
-/* Zoekbalk control: breedte schaalt mee op mobiel */
-.pw-search { width:min(92vw, 320px); margin:8px 8px 0 8px; }
-
-/* Vanaf 900px → 2 kolommen en full-height layout zoals desktop */
-@media (min-width: 900px) {
-  .wrap {
-    grid-template-columns:1fr 1fr;
-    height:calc(100vh - 56px);
-  }
-  #map { height:100%; }
-  .panel-right { height:100%; overflow:auto; }
-}
-
-/* Extra: op hele brede schermen map iets breder dan paneel */
-@media (min-width: 1400px) {
-  .wrap { grid-template-columns:1.2fr 1fr; }
-}
-
+    .wrap { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px; height:calc(100vh - 56px); }
+    #map { height:100%; border-radius:12px; border:1px solid var(--border); box-shadow:0 0 0 1px rgba(255,255,255,.05) inset; position:relative; }
+    .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px; }
     .panel-right { height:100%; overflow:auto; }
     .muted { color:var(--muted); }
 
@@ -945,35 +879,6 @@ body.light .leaflet-control-zoom,
 body.light .leaflet-control-layers {
   box-shadow: 0 2px 12px rgba(0,0,0,.12);
 }
-/* --- Responsive tuning voor Leaflet controls --- */
-.leaflet-control { font-size: 13px; }
-.leaflet-control-layers { max-width: 360px; }
-.leaflet-control-layers-expanded {
-  width: clamp(220px, 80vw, 360px);
-  max-height: 45vh;
-  overflow: auto;
-}
-
-/* Mobiel: compact, niet overlappen */
-@media (max-width: 768px) {
-  /* randen wat dichter op het scherm */
-  .leaflet-top.leaflet-right  { margin-right: 8px; }
-  .leaflet-top.leaflet-left   { margin-left:  8px; }
-  .leaflet-bottom.leaflet-right,
-  .leaflet-bottom.leaflet-left { margin-bottom: 8px; }
-
-  /* kleinere zoomknoppen */
-  .leaflet-control-zoom a { width: 32px; height: 32px; line-height: 32px; }
-
-  /* zoekcontrol smaller */
-  .pw-search { width: min(92vw, 320px); padding: 6px; }
-  .pw-search input { padding: 6px 8px; }
-
-  /* legenda & info compacter */
-  .pw-ctl { width: min(70vw, 240px); padding: 8px; }
-  .pw-ctl h3 { font-size: 13px; }
-  .pw-ctl .sec { font-size: 12px; }
-}
 
   </style>
 </head>
@@ -1059,19 +964,7 @@ body.light .leaflet-control-layers {
   </div>
 
   <script>
-  const map = L.map('map').setView([52.1, 5.3], 8);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-
-  // ⬇️ NIEUW: simpele mobiele-vlag
-  const IS_MOBILE = window.matchMedia('(max-width: 768px)').matches;
-
-    // Zorg dat Leaflet z'n grootte herkent bij layout/rotatie
-function fixMapSize(){ setTimeout(()=> map.invalidateSize(), 60); }
-window.addEventListener('resize', fixMapSize);
-window.addEventListener('orientationchange', fixMapSize);
-// eerste keer na opbouwen
-setTimeout(fixMapSize, 0);
-
+    const map = L.map('map').setView([52.1, 5.3], 8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
     let overlays = {};
@@ -1294,7 +1187,7 @@ setTimeout(fixMapSize, 0);
         return div;
       }
     });
-    const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
+    const infoCtl = new InfoCtl({ position:'topright' }).addTo(map);
 
     function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
       document.getElementById('uiF').textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
@@ -1310,15 +1203,7 @@ setTimeout(fixMapSize, 0);
       overlays['BRO Grondwatertrappen (Gt)']    = make(ui.meta.gt,    0.45).addTo(map);
       overlays["Fysisch Geografische Regio's"]  = make(ui.meta.fgr,   0.45).addTo(map);
 
-      const ctlLayers = L.control.layers(
-  {},
-  overlays,
-  {
-    collapsed: IS_MOBILE,                  // mobiel: ingeklapt icoon
-    position: IS_MOBILE ? 'topright' : 'bottomleft'
-  }
-).addTo(map);
-
+      const ctlLayers = L.control.layers({}, overlays, { collapsed:false, position:'bottomleft' }).addTo(map);
       const cont = ctlLayers.getContainer();
       const baseList = cont.querySelector('.leaflet-control-layers-base'); if(baseList) baseList.remove();
       const sep = cont.querySelector('.leaflet-control-layers-separator'); if(sep) sep.remove();
@@ -1625,11 +1510,4 @@ setTimeout(fixMapSize, 0);
 </body>
 </html>
 '''
-    return HTMLResponse(
-        content=html,
-        headers={
-            "Cache-Control": "no-store, max-age=0, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        },
-    )
+    return html
