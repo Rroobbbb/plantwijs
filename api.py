@@ -47,37 +47,26 @@ GWD_WMS = "https://service.pdok.nl/bzk/bro-grondwaterspiegeldiepte/wms/v2_0"
 TX_WGS84_RD = Transformer.from_crs(4326, 28992, always_xy=True)
 TX_WGS84_WEB = Transformer.from_crs(4326, 3857, always_xy=True)
 
-# ───────────────────── Dataset cache
+# ───────────────────── Dataset (repo-bestand of externe URL)
+DATA_URL = os.getenv("PW_DATA_URL") or os.getenv("DATA_URL")  # optioneel: raw GitHub
 DATA_PATHS = [
-    "out/plantwijs_full_semicolon.csv",
+    "public/plantwijs_full.csv",               # <— commit dit bestand in je repo
+    "public/plantwijs_full_semicolon.csv",     # (desnoods)
+    "out/plantwijs_full_semicolon.csv",        # lokale build (fallback)
     "out/plantwijs_full.csv",
 ]
-_CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None}
+_CACHE: Dict[str, Any] = {"df": None, "mtime": None, "path": None, "url": None}
 
-# --- Externe dataset (Google Sheets CSV) ---
-# Als je geen env-var zet, gebruikt hij onderstaande URL standaard.
-DATA_URL = os.getenv(
-    "PLANTWIJS_DATA_URL",
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTJVlLk-gIu6T89zwDA5AAH77eVR21OtzRgoEi_2vllJLx6M9sAe2DsoVk-UcdZqqp7AL3re0qpQ_rH/pub?gid=0&single=true&output=csv"
-).strip()
+def _detect_sep_from_text(text: str) -> str:
+    head = text[:4096]
+    return ";" if head.count(";") >= head.count(",") else ","
 
-# Hoe vaak remote CSV verversen (in seconden)
-DATA_REFRESH_SEC = int(os.getenv("PLANTWIJS_DATA_REFRESH_SEC", "1800"))  # 30 min
-
-# Tijdelijk pad voor de gedownloade CSV
-_REMOTE_TMP = os.path.join(tempfile.gettempdir(), "plantwijs_data.csv")
-
-def _detect_sep(path: str) -> str:
-    try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            head = f.read(4096)
-        return ";" if head.count(";") >= head.count(",") else ","
-    except Exception:
-        return ";"
-
-def _load_df(path: str) -> pd.DataFrame:
-    sep = _detect_sep(path)
-    df = pd.read_csv(path, sep=sep, dtype=str, encoding_errors="ignore")
+def _load_df_from_url(url: str) -> pd.DataFrame:
+    r = requests.get(url, headers=HEADERS, timeout=15)
+    r.raise_for_status()
+    text = r.text
+    sep = _detect_sep_from_text(text)
+    df = pd.read_csv(io.StringIO(text), sep=sep, dtype=str, encoding_errors="ignore")
     df.columns = [str(c).strip().lower().replace(" ", "_").replace("-", "_") for c in df.columns]
     if "naam" not in df.columns and "nederlandse_naam" in df.columns:
         df = df.rename(columns={"nederlandse_naam": "naam"})
@@ -91,54 +80,31 @@ def _load_df(path: str) -> pd.DataFrame:
             df[must] = ""
     return df
 
-def _download_if_needed(url: str) -> Optional[str]:
-    """Download CSV naar een temp-bestand en hergebruik tot de refresh-tijd is verstreken.
-    Retourneert het pad naar de lokale cache, of None bij mislukking (zonder cache).
-    """
-    now = time.time()
-    need_download = True
-    if os.path.exists(_REMOTE_TMP):
-        age = now - os.path.getmtime(_REMOTE_TMP)
-        if age < DATA_REFRESH_SEC:
-            need_download = False
-
-    if need_download:
-        try:
-            r = requests.get(url, headers=HEADERS, timeout=20, stream=True)
-            r.raise_for_status()
-            with open(_REMOTE_TMP, "wb") as f:
-                for chunk in r.iter_content(chunk_size=65536):
-                    if chunk:
-                        f.write(chunk)
-            print(f"[DATA] remote CSV vernieuwd: {url} → {_REMOTE_TMP}")
-        except Exception as e:
-            print(f"[DATA] remote download mislukte ({e}); gebruik bestaande cache indien aanwezig")
-            if not os.path.exists(_REMOTE_TMP):
-                return None
-
-    return _REMOTE_TMP if os.path.exists(_REMOTE_TMP) else None
 
 def get_df() -> pd.DataFrame:
-    # 1) Probeer externe URL (Google Sheets CSV)
+    # 1) Probeer externe URL (indien gezet)
     if DATA_URL:
-        path = _download_if_needed(DATA_URL)
-        if not path:
-            raise FileNotFoundError("Kon remote dataset niet laden en er is geen cache.")
-    else:
-        # 2) Fallback: lokale bestanden in de repo
-        path = next((p for p in DATA_PATHS if os.path.exists(p)), None)
-        if not path:
-            raise FileNotFoundError(
-                "Geen dataset gevonden. Commit out/plantwijs_full_semicolon.csv "
-                "of stel PLANTWIJS_DATA_URL in."
-            )
+        if _CACHE["df"] is None or _CACHE.get("url") != DATA_URL:
+            try:
+                df = _load_df_from_url(DATA_URL)
+                _CACHE.update({"df": df, "mtime": None, "path": None, "url": DATA_URL})
+                print(f"[DATA] geladen van URL: {DATA_URL} — {len(df)} rijen, {df.shape[1]} kolommen")
+                return _CACHE["df"].copy()
+            except Exception as e:
+                print("[DATA] URL laden faalde, val terug op lokale bestanden:", e)
 
+    # 2) Vallen terug op repo-bestand of out/
+    path = next((p for p in DATA_PATHS if os.path.exists(p)), None)
+    if not path:
+        raise FileNotFoundError(
+            "Geen dataset gevonden. Plaats public/plantwijs_full.csv in de repo "
+            "of zet PW_DATA_URL op een raw GitHub CSV."
+        )
     m = os.path.getmtime(path)
     if _CACHE["df"] is None or _CACHE["mtime"] != m or _CACHE["path"] != path:
         df = _load_df(path)
-        _CACHE.update({"df": df, "mtime": m, "path": path})
+        _CACHE.update({"df": df, "mtime": m, "path": path, "url": None})
         print(f"[DATA] geladen: {path} — {len(df)} rijen, {df.shape[1]} kolommen")
-
     return _CACHE["df"].copy()
 
 # ───────────────────── HTTP utils
@@ -731,7 +697,7 @@ def advies_geo(
 
 # ───────────────────── UI
 @app.get("/", response_class=HTMLResponse)
-def index() -> str:
+def index() -> HTMLResponse:
     html = '''
 <!doctype html>
 <html lang=nl>
@@ -1601,4 +1567,11 @@ setTimeout(fixMapSize, 0);
 </body>
 </html>
 '''
-    return html
+    return HTMLResponse(
+        content=html,
+        headers={
+            "Cache-Control": "no-store, max-age=0, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )

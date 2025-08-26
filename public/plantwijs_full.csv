@@ -1,0 +1,83 @@
+﻿naam;wetenschappelijke_naam;inheems;standplaats_licht;vocht;bodem;ellenberg_l;ellenberg_l_min;ellenberg_l_max;ellenberg_f;ellenberg_f_min;ellenberg_f_max;ellenberg_t;ellenberg_t_min;ellenberg_t_max;ellenberg_n;ellenberg_n_min;ellenberg_n_max;ellenberg_r;ellenberg_r_min;ellenberg_r_max;ellenberg_s;ellenberg_s_min;ellenberg_s_max;hoogte;breedte;winterhardheidszone;grondsoorten
+Bittere wilg;Salix purpurea;ja;zon;nat / zeer nat;;8,055555556;7,5;9;8,291666667;7;9;4,833333333;3;6;4,5;3;5;7,5;7;8;0;0;0;3;3;4A;Zavel | Zware klei | Zand | Leem
+Katwilg;Salix viminalis;ja;zon;nat / zeer nat;;7,4375;7;8;7,972222222;7,75;8;5,75;5;6;5,6;4;6;7,142857143;6;8;0;0;0;3;3;4A;Zavel | Zware klei | Lichte klei
+Laurierwilg;Salix pentandra;ja;zon;nat / zeer nat;;7,071428571;7;7,5;8,09375;8;8,75;4,5;4;5;4;4;4;5,666666667;5;6;0;0;0;10;5;5A;Zavel | Lichte klei | Zand | Leem
+Jeneverbes;Juniperus communis;ja;zon;droog / vochtig / nat;;8,134259259;7;9;4,1625;3;6,75;4,163194444;2;6;2,75;1;4;4,966666667;3;7;0;0;0;5;2;3A;Zavel | Lichte klei | Zand | Leem
+Pontische rododendron;Rhododendron ponticum;ja;halfschaduw;vochtig;;4,5;4;5;5,333333333;5;6;5;5;5;4,5;3;6;3,5;3;4;0;0;0;3;3;6A;Veen | Zand | Leem
+Struikhei;Calluna vulgaris;ja;halfschaduw / zon;vochtig / nat;;7,666666667;6;9;5,642857143;5;7;4,571428571;3;6;1,375;1;3;1,5;1;3;0;0;0;0,6;0,6;5A;Veen | Zand
+Es;Fraxinus excelsior;ja;halfschaduw / zon;vochtig / nat / zeer nat;;5;4;8;6,71875;6;9;5,583333333;5;9;6,625;6;7;7,25;7;9;0;0;0;25;20;4A;Löss | Zware klei | Lichte klei | Leem
+Noorse esdoorn;Acer platanoides;nee;halfschaduw / zon;vochtig / nat;;4,6875;4;7;5,583333333;5;6,5;5,84375;4,75;7;6,333333333;6;7;6,5;5;7;0;0;0;20;15;4A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Hazelaar;Corylus avellana;ja;halfschaduw / zon;vochtig / nat;;5,6;4;8;5,611111111;5;7;5,9;5;10;5,777777778;4;8;5,857142857;5;7;0;0;0;5;4;5A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Tweestijlige meidoorn;Crataegus laevigata;ja;halfschaduw / zon;vochtig;;5,666666667;5;7;5,208333333;5;6,25;5,666666667;5;6;4,8;4;5;6,2;5;7;0;0;0;5;3;5A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Schietwilg;Salix alba;ja;halfschaduw / zon;nat / zeer nat;;6;5;9;8,045454545;7;10;6,4;5;11;6,888888889;5;8;7,777777778;7;8;0,125;0;1;15;12;4A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Gewone vlier;Sambucus nigra;ja;halfschaduw / zon;vochtig / nat / zeer nat;;6,555555556;5;8;5,916666667;5;9;5,722222222;5;9;8;7;9;6,666666667;6;8;0;0;0;3;3;4A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Dwergkrentenboompje;Amelanchier spicata;;zon;droog / vochtig;;7;7;7;4;3;5;4;4;4;3;3;3;;;;0;0;0;2;2;5A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Eenstijlige meidoorn;Crataegus monogyna;ja;halfschaduw / zon;droog / vochtig;;7,009259259;6;9;4,444444444;3;6;6,401041667;5;10;4,416666667;2;6;6,791666667;4;8;0,238095238;0;5;6;2;5A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Sleedoorn;Prunus spinosa;ja;halfschaduw / zon;zeer droog / droog / vochtig;;7,166666667;6;9;4,041666667;1;5,5;5,555555556;4,75;8;4;1;6;6,428571429;5;7;0,142857143;0;1;3;3;5A;Löss | Zavel | Zware klei | Lichte klei | Zand | Leem
+Ruwe iep;Ulmus glabra;ja;halfschaduw / zon;vochtig / nat / zeer nat;;4,6875;4;7;6,361111111;5;8;5,59375;4,75;9;6,571428571;6;7;6,714285714;5;9;0;0;0;25;15;5A;Löss | Zavel | Zware klei | Lichte klei | Leem
+Hulst;Ilex aquifolium;ja;halfschaduw / zon;vochtig / nat;;4,75;4;8;5,222222222;5;7;5,75;5;9;4,5;2;5;4;3;5;0;0;0;5;3;6A;Löss | Zavel | Zand | Leem
+Rode bosbes;Vaccinium vitis-idaea;ja;halfschaduw;droog / vochtig;;5,0625;4,5;6;4,805555556;4;6,25;3,194444444;1;4;1,857142857;1;3;2;2;2;0;0;0;0,1;1;1A;Löss | Zavel | Zand | Leem
+Rode kamperfoelie;Lonicera xylosteum;ja;halfschaduw / zon;zeer droog / droog / vochtig;;5,1875;4;7;4,805555556;2;6,25;5,21875;4;6;5,166666667;3;6;7,285714286;7;9;0;0;0;0,8;1;3A;Löss | Zavel | Zand | Leem
+Amerikaanse vogelkers;Prunus serotina;ja;halfschaduw;vochtig / nat;;5,6;4;6;5,25;5;6,5;6,375;6;8;4;4;4;4;4;4;0;0;0;5;5;4A;Löss | Zavel | Zand | Leem
+Appel;Malus sylvestris;ja;halfschaduw / zon;droog / vochtig / nat;;6,888888889;5;9;4,916666667;3;6,5;5,513888889;4,25;6;4,625;1;6;6,375;4;7;0;0;0;3;4;4A;Löss | Zavel | Zand | Leem
+Geoorde wilg;Salix aurita;ja;halfschaduw / zon;nat / zeer nat;;6,9375;6;7,5;8,055555556;8;8,5;4,583333333;3;6;3;3;3;3,714285714;3;4;0;0;0;0,5;0,5;5B;Löss | Zavel | Zand | Leem
+Zuurbes;Berberis vulgaris;ja;halfschaduw / zon;zeer droog / droog / vochtig;;7,111111111;6;9;3,888888889;1;5;5,75;5;7;3;1;4;8,125;8;9;0;0;0;1;1;4A;Löss | Zavel | Zand | Leem
+Gaspeldoorn;Ulex europaeus;ja;zon;droog / vochtig;;7,5;7;9;4,75;4;5;6,5;6;7;2,333333333;1;3;3,458333333;3;5;0,3;0;6;2;2;7A;Löss | Zavel | Zand | Leem
+Gewone salomonszegel;Polygonatum multiflorum;ja;schaduw / halfschaduw / zon;vochtig / nat;;3,5;2;7;5,21875;5;6,75;5,857142857;5;9;4,857142857;4;6;6,571428571;5;8;0;0;0;0,25;0,6;3A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Mannetjesvaren;Dryopteris filix-mas;ja;schaduw / halfschaduw / zon;vochtig / nat / zeer nat;;3,777777778;3;7;5,625;5;9;5,625;4,75;9;5,625;4;6;5,25;5;6;0;0;0;0,75;1;2B;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Kleine maagdenpalm;Vinca minor;ja;schaduw / halfschaduw;vochtig;;3,857142857;3;4;5,321428571;5;6,25;5,928571429;5,5;6;6,166666667;6;7;6,6;6;7;0;0;0;0,15;0,5;4B;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Haagbeuk;Carpinus betulus;ja;halfschaduw / zon;vochtig;;4,375;4;7;5,375;5;6,25;5,875;5;7;5,25;5;6;5,5;5;6;0;0;0;15;12;5A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Grote veldbies;Luzula sylvatica;ja;schaduw / halfschaduw / zon;vochtig / nat / zeer nat;;4,416666667;3;7;5,75;5;10;4,635416667;3;9;3,738095238;3;5;3,047619048;2;4;0;0;0;0,3;0,15;6A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Gewone esdoorn;Acer pseudoplatanus;ja;halfschaduw / zon;vochtig / nat / zeer nat;;4,722222222;4;7;6,15;5;9;5,607142857;5;9;6,625;5;7;5,833333333;5;7;0;0;0;25;20;4A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Zwarte els;Alnus glutinosa;ja;halfschaduw / zon;nat / zeer nat;;5,666666667;5;8;9,2;8;12;5,555555556;5;8;6,333333333;5;8;5,875;5;6;0,571428571;0;1;10;6;3A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Spaanse aak;Acer campestre;ja;halfschaduw / zon;droog / vochtig;;5,666666667;5;8;4,925;3;6,25;6,583333333;5,25;9;5,375;3;6;7,25;7;9;0;0;0;10;7;5A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Gelderse roos;Viburnum opulus;ja;halfschaduw;vochtig / nat;;6;6;6;6,535714286;6;7;5,09375;4,75;6;6;6;6;6,857142857;6;7;0;0;0;3;2;4A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Witte els;Alnus incana;ja;halfschaduw / zon;nat;;6,0625;5;7;7,083333333;7;7,75;3,96875;3;5;5,8;4;7;7,285714286;6;8;0;0;0;12;6;2A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Vederesdoorn;Acer negundo;nee;halfschaduw / zon;vochtig / nat;;6,166666667;5;8;6,208333333;6;7;6,428571429;6;8;6,8;6;7;6,8;6;7;0,2;0;1;10;8;4A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Ratelpopulier;Populus tremula;ja;halfschaduw / zon;vochtig / nat;;6,722222222;6;9;5,325;5;7,25;5,166666667;4,5;7;4,8;3;6;5;4;6;0;0;0;18;8;2A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Fraaie vrouwenmantel;Alchemilla mollis;nee;zon;vochtig;;7;7;7;6;6;6;6;6;6;6;6;6;5;5;5;0;0;0;0,3;0,5;4A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Hemelboom;Ailanthus altissima;nee;halfschaduw / zon;vochtig;;7,142857143;6;8;5,071428571;5;5,5;7,75;6;11;7,166666667;5;8;6,333333333;5;7;0,333333333;0;1;20;15;6A;Löss | Zavel | Veen | Zware klei | Lichte klei | Zand | Leem | Alle grondsoorten
+Hangende zegge;Carex pendula;ja;halfschaduw / zon;nat / zeer nat;;5;4;8;8,35;7,5;12;6,416666667;5;10;5,875;5;7;6,5;6;8;0;0;0;0,75;1;5A;Löss | Zavel | Veen | Zware klei | Lichte klei | Leem | Alle grondsoorten
+Wilde lijsterbes;Sorbus aucuparia;ja;halfschaduw / zon;vochtig / nat / zeer nat;;6,444444444;6;9;5,84375;5;8;5,071428571;2;9;3,555555556;1;5;4,166666667;3;7;0;0;0;8;6;4A;Löss | Zavel | Veen | Zand | Leem
+Ruwe berk;Betula pendula;ja;zon;droog / vochtig / nat;;7,1875;7;8;5,071428571;3;6,5;4,958333333;4;6;3,4;3;4;3,8;3;4;0,142857143;0;1;15;9;2A;Löss | Zavel | Veen | Zand | Leem
+Zachte berk;Betula pubescens;ja;zon;vochtig / nat / zeer nat;;7,25;7;9;7,421875;5;9;4,277777778;3;6;2,892857143;1;4;3;1;4;0;0;0;15;10;1A;Löss | Zavel | Veen | Zand | Leem
+Taxus;Taxus baccata;ja;schaduw / halfschaduw / zon;droog / vochtig / nat / zeer nat;;4,5;3;7;5,472222222;4;9;5,583333333;4;9;4,666666667;3;5;7,125;6;9;0;0;0;10;8;6A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Fladderiep;Ulmus laevis;ja;halfschaduw / zon;nat / zeer nat;;4,5;4;7;7,571428571;7;8;5,875;4;8;7;7;7;7;7;7;0;0;0;25;10;5A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Gewone sneeuwbes;Symphoricarpos albus;ja;halfschaduw / zon;vochtig;;6;5;7;5,25;5;6;5,75;5;6;6,25;5;7;6;5;7;0;0;0;1;1;3A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Sporkehout;Frangula alnus;ja;halfschaduw / zon;nat / zeer nat;;6,277777778;5,5;9;7,55;7;8;5,833333333;4,5;8;3,5;1;5;4,375;3;5;0;0;0;4;2;3A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Grauwe wilg s.l.;Salix cinerea;ja;halfschaduw / zon;vochtig / nat / zeer nat;;7;5;9;8,758333333;6;10;5,5;4;7;4,375;4;5;5,25;5;6;0,142857143;0;1;3;3;4A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Hartbladige els;Alnus cordata;nee;zon;vochtig / nat;;7,5;7;8;6,5;6;7;6,333333333;6;7;6,5;6;7;6,5;6;7;0;0;0;10;4;6A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Amandelwilg;Salix triandra;ja;zon;nat / zeer nat;;7,604166667;7;9;8,277777778;8;9;4,770833333;3;6;4,857142857;3;6;7,285714286;7;8;0;0;0;2;3;5A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Duindoorn;Hippophae rhamnoides;ja;zon;droog / vochtig / nat;;8,6;8;9;4,875;4;7;5,966666667;5,5;7;3;2;5;8;7;9;0,75;0;3;4;4;4A;Löss | Zavel | Veen | Lichte klei | Zand | Leem
+Gewone zilverspar;Abies alba;;schaduw / halfschaduw / zon;vochtig / nat;;3,857142857;3;7;6,083333333;5;7;4,65625;3;5,25;5,5;4;6;5,25;5;6;0;0;0;30;15;4B;Löss | Zavel | Lichte klei | Zand | Leem
+Beuk;Fagus sylvatica;ja;schaduw / halfschaduw / zon;vochtig / nat / zeer nat;;4,055555556;2,5;7;5,45;5;8;5,583333333;5;9;5;3;7;5,666666667;4;7;0;0;0;25;20;5B;Löss | Zavel | Lichte klei | Zand | Leem
+Rood peperboompje;Daphne mezereum;ja;schaduw / halfschaduw;vochtig / nat;;4,0625;3,5;5;5,305555556;5;6,75;4,5;3;5;5,285714286;5;6;6,857142857;6;7;0;0;0;1;1;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Zomerlinde;Tilia platyphyllos;ja;schaduw / halfschaduw / zon;droog / vochtig;;4,75;3;8;5,125;4;6;5,854166667;4;7;6,333333333;5;7;7,333333333;7;9;0;0;0;25;20;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Winterlinde;Tilia cordata;ja;halfschaduw / zon;droog / vochtig / nat;;4,944444444;4;7;5,055555556;4;6,5;5,666666667;5;8;4,875;4;5;6,333333333;5;9;0;0;0;20;10;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Zoete kers;Prunus avium;ja;halfschaduw / zon;vochtig;;5;4;8;5,25;5;6,25;5,888888889;5;9;5;4;6;6,625;5;7;0;0;0;15;10;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Alpenbes;Ribes alpinum;ja;halfschaduw;zeer droog / droog / vochtig;;5,25;5;6;4,5;1;6;4;4;4;5,25;2;7;8;7;9;0;0;0;1;1;3A;Löss | Zavel | Lichte klei | Zand | Leem
+Witte paardenkastanje;Aesculus hippocastanum;nee;halfschaduw / zon;droog / vochtig / nat;;5,416666667;4;7;5,458333333;4;7;6,416666667;6;7;6,6;5;7;5,8;5;7;0;0;0;20;16;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Tamme kastanje;Castanea sativa;ja;halfschaduw / zon;droog / vochtig / nat;;5,666666667;5;8;5,333333333;4;7;8,222222222;7;10;4,166666667;3;5;4,333333333;4;6;0;0;0;25;20;6A;Löss | Zavel | Lichte klei | Zand | Leem
+Vogelkers;Prunus padus;ja;halfschaduw / zon;vochtig / nat / zeer nat;;5,685185185;5;9;7,341666667;6;8;4,648148148;3;7;5,791666667;4;7;6,833333333;6;8;0;0;0;5;4;3A;Löss | Zavel | Lichte klei | Zand | Leem
+Gladde iep;Ulmus minor;ja;halfschaduw / zon;droog / vochtig / nat / zeer nat;;5,7;4;8;5,8125;4;8;7,125;5;11;6,5;5;7;7,5;5;9;0,125;0;1;25;15;5A;Löss | Zavel | Lichte klei | Zand | Leem
+Wilde kardinaalsmuts;Euonymus europaeus;ja;halfschaduw / zon;droog / vochtig;;5,8125;4,5;8;5,027777778;4;6,25;5,53125;5;8;5;4;6;7,571428571;6;9;0;0;0;4;4;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Trosvlier;Sambucus racemosa;ja;halfschaduw;vochtig;;5,857142857;5;6;5,178571429;5;6,25;4;3;5;7,166666667;5;8;5;4;6;0;0;0;2;2;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Bosroos;Rosa arvensis;ja;halfschaduw / zon;zeer droog / droog / vochtig;;5,875;5;9;4,65625;2;6,25;5,5625;5;8;4,714285714;3;5;7;6;9;0;0;0;0,5;2;5B;Löss | Zavel | Lichte klei | Zand | Leem
+Robinia;Robinia pseudoacacia;ja;halfschaduw / zon;droog / vochtig;;5,888888889;5;8;4,416666667;4;5,75;7;6;11;7,5;6;8;6,4;5;8;0,125;0;1;20;15;5A;Löss | Zavel | Lichte klei | Zand | Leem
+Witte abeel;Populus alba;ja;halfschaduw / zon;vochtig / nat;;6;5;8;6,416666667;5;7;7,638888889;5,75;11;6,125;6;7;7,5;7;8;0,125;0;1;15;15;3A;Löss | Zavel | Lichte klei | Zand | Leem
+Zwarte populier;Populus nigra;ja;halfschaduw / zon;nat / zeer nat;;6,111111111;5;9;7,944444444;7;10;6,37037037;5,5;7;6,854166667;6;7;7,125;7;8;0;0;0;25;10;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Peer;Pyrus communis;ja;halfschaduw / zon;droog / vochtig;;6,125;5;7;5,018518519;4;6;6,010416667;5;7;5;3;7;6,785714286;4;8;0;0;0;10;5;5A;Löss | Zavel | Lichte klei | Zand | Leem
+Amerikaans krentenboompje;Amelanchier lamarckii;ja;halfschaduw / zon;droog / vochtig;;6,666666667;6;8;4,666666667;4;5;6,75;6;8;3,333333333;3;4;4,666666667;3;8;0;0;0;6;6;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Wilde liguster;Ligustrum vulgare;ja;halfschaduw / zon;zeer droog / droog / vochtig / nat;;6,6875;5,5;9;4,277777778;1;6,5;6,4375;5,5;9;4,142857143;2;5;7,571428571;6;9;0;0;0;2;2;7A;Löss | Zavel | Lichte klei | Zand | Leem
+Wintereik;Quercus petraea;ja;halfschaduw / zon;droog / vochtig;;6,694444444;6;9;5,141666667;4;6;6,458333333;5;9;3,666666667;2;6;4,583333333;3;7;0;0;0;25;20;5A;Löss | Zavel | Lichte klei | Zand | Leem
+Wegedoorn;Rhamnus cathartica;ja;halfschaduw / zon;droog / vochtig;;6,888888889;6;8;4,3;3;6;5,055555556;4,5;6;4,428571429;3;6;8;7;9;0;0;0;4;4;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Zomereik;Quercus robur;ja;halfschaduw / zon;vochtig / nat;;6,944444444;6;9;5,6875;5;6,5;6,333333333;5;9;4,333333333;2;6;5;3;6;0;0;0;25;25;5A;Löss | Zavel | Lichte klei | Zand | Leem
+Rode kornoelje;Cornus sanguinea;ja;halfschaduw / zon;droog / vochtig / nat;;7;6;9;5,055555556;3;7;5,773148148;5;9;4,8;3;6;7,5;7;9;0;0;0;2;2;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Kaukasische zilverspar;Abies nordmanniana;;zon;vochtig;;7;7;7;5;5;5;4;4;4;5;5;5;4;4;4;0;0;0;25;6;5A;Löss | Zavel | Lichte klei | Zand | Leem
+Boerenkrokus;Crocus tommasinianus;ja;zon;vochtig;;7;7;7;6;6;6;6,5;6;7;4;4;4;6;6;6;0;0;0;0,1;0,1;3A;Löss | Zavel | Lichte klei | Zand | Leem
+Wollige sneeuwbal;Viburnum lantana;ja;halfschaduw / zon;zeer droog / droog / vochtig;;7,055555556;6;9;3,972222222;1;5,75;6,194444444;5;8;4;2;5;7,875;7;9;0;0;0;2,5;2;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Boswilg;Salix caprea;ja;halfschaduw / zon;vochtig / nat / zeer nat;;7,166666667;6,5;9;6,275;5;9;5,142857143;4;7;5,625;4;7;6,375;5;7;0;0;0;5;3;4A;Löss | Zavel | Lichte klei | Zand | Leem
+Grove den;Pinus sylvestris;ja;halfschaduw / zon;droog / vochtig / nat;;7,222222222;6;9;5,196428571;4;6,75;4,708333333;3;7;2;1;3;3,8;2;5;0;0;0;25;10;2A;Löss | Zavel | Lichte klei | Zand | Leem
+Weichselboom;Prunus mahaleb;ja;zon;zeer droog / droog / vochtig;;7,285714286;7;9;3,071428571;1;4,5;6,5;5;8;2,333333333;1;4;8;8;8;0;0;0;5;4;5A;Löss | Zavel | Lichte klei | Zand | Leem
+Gele kornoelje;Cornus mas;ja;halfschaduw / zon;droog / vochtig;;6,333333333;6;8;4,625;4;5,75;7;6;8;4,2;4;5;8;8;8;0;0;0;5;3;4A;Löss | Zavel | Lichte klei | Leem
+Kruipwilg;Salix repens;ja;halfschaduw / zon;vochtig / nat / zeer nat;;7,802083333;5;9;7,402777778;6;9;5,114583333;4;7;3,433333333;2;5;5,8;4;8;0,047619048;0;2;0;0;4A;Alle grondsoorten
