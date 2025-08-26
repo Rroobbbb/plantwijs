@@ -8,3 +8,5 @@ selecteren op landschap en tuin
 
 cd C:\PlantWijs
 venv\Scripts\uvicorn api:app --reload --port 9000
+
+

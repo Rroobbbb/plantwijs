@@ -997,10 +997,6 @@ body.light .leaflet-control-layers {
 @media (max-width: 768px){
   .leaflet-control.pw-ctl { display: none !important; }
 }
-/* Mobiel: verberg de in-kaart legenda (InfoCtl) */
-@media (max-width: 768px){
-  .leaflet-control.pw-ctl { display: none !important; }
-}
 
   </style>
 </head>
@@ -1335,7 +1331,7 @@ setTimeout(fixMapSize, 0);
     });
     const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
-function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
+   function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
   const tF = "Fysisch Geografische Regio's: " + (fgr || '—');
   const tB = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
   const tG = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
@@ -1347,6 +1343,8 @@ function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
   // mobiele legenda onder de kaart
   set('uiF_m', tF); set('uiB_m', tB); set('uiG_m', tG);
 }
+
+
 
     async function loadWms(){
       ui.meta = await (await fetch('/api/wms_meta')).json();
