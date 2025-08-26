@@ -808,14 +808,7 @@ def index() -> HTMLResponse:
     height:calc(100vh - 56px);
   }
   #map { height:100%; }
-/* default: mobiel */
-.panel-right { height:auto; overflow:visible; }
-
-/* desktop en breder */
-@media (min-width: 900px) {
   .panel-right { height:100%; overflow:auto; }
-}
-
 }
 
 /* Extra: op hele brede schermen map iets breder dan paneel */
