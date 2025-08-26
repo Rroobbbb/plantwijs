@@ -1095,7 +1095,7 @@ body.light .leaflet-control-layers {
   </div>
 
   <script>
-  const map = L.map('map').setView([52.1, 5.3], 8);
+ L.control.zoom({ position: 'bottomleft' }).addTo(map);
   const isMobile = window.matchMedia('(max-width: 768px)').matches;
 // Zoomknoppen linksonder op mobiel
 if (isMobile) map.zoomControl.setPosition('bottomleft');
@@ -1336,14 +1336,18 @@ setTimeout(fixMapSize, 0);
     });
     const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
-function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
-  const lineF = "Fysisch Geografische Regio's: " + (fgr || '—');
-  const lineB = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
-  const lineG = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
+function setClickInfo({ fgr, bodem, bodem_bron, gt, vocht }) {
+  const fTxt = "Fysisch Geografische Regio's: " + (fgr || '—');
+  const bTxt = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
+  const gTxt = 'Gt: ' + ((gt || '—') + (vocht ? ` → ${vocht}` : ''));
 
-  const write = (selector, text) => {
-    document.querySelectorAll(selector).forEach(el => { el.textContent = text; });
-  };
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+  // legenda IN de kaart (desktop)
+  setTxt('uiF', fTxt); setTxt('uiB', bTxt); setTxt('uiG', gTxt);
+  // legenda ONDER de kaart (mobiel)
+  setTxt('uiF2', fTxt); setTxt('uiB2', bTxt); setTxt('uiG2', gTxt);
+}
 
   // in-kaart paneel (desktop)
   write('#uiF', lineF);
