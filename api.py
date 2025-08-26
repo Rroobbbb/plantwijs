@@ -770,22 +770,6 @@ def index() -> HTMLResponse:
     * { box-sizing:border-box; }
     body { margin:0; font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--fg); }
     header { padding:10px 14px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:10; display:flex; gap:10px; align-items:center; justify-content:space-between; }
-    :root { --hdr-h: 56px; } /* ongeveer je headerhoogte */
-
-header{
-  position: sticky;
-  position: -webkit-sticky; /* iOS Safari */
-  top: 0;
-  z-index: 2000;            /* boven Leaflet (controls ~1000) */
-  background: var(--bg);    /* voorkomt doorschijnen bij scroll */
-  min-height: var(--hdr-h);
-}
-
-/* Mobiel: voorkom overlap van Leaflet controls met de sticky header */
-@media (max-width: 768px){
-  .leaflet-top { margin-top: calc(var(--hdr-h) + 8px); }
-}
-
     header h1 { margin:0; font-size:18px; }
    /* Mobile-first: 1 kolom, map bovenaan, paneel eronder */
 .wrap {
@@ -824,7 +808,14 @@ header{
     height:calc(100vh - 56px);
   }
   #map { height:100%; }
+/* default: mobiel */
+.panel-right { height:auto; overflow:visible; }
+
+/* desktop en breder */
+@media (min-width: 900px) {
   .panel-right { height:100%; overflow:auto; }
+}
+
 }
 
 /* Extra: op hele brede schermen map iets breder dan paneel */
