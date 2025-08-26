@@ -1353,13 +1353,12 @@ setTimeout(fixMapSize, 0);
       overlays['BRO Grondwatertrappen (Gt)']    = make(ui.meta.gt,    0.45).addTo(map);
       overlays["Fysisch Geografische Regio's"]  = make(ui.meta.fgr,   0.45).addTo(map);
 
-     const ctlLayers = L.control.layers(
-  {}, overlays,
-  { collapsed:false, position: isMobile ? 'topright' : 'bottomleft' }
-).addTo(map);
+const ctlLayers = L.control.layers({}, overlays, { collapsed:true, position:'bottomleft' }).addTo(map);
+
 
 
       const cont = ctlLayers.getContainer();
+      cont.classList.remove('leaflet-control-layers-expanded');
       const baseList = cont.querySelector('.leaflet-control-layers-base'); if(baseList) baseList.remove();
       const sep = cont.querySelector('.leaflet-control-layers-separator'); if(sep) sep.remove();
       const overlaysList = cont.querySelector('.leaflet-control-layers-overlays');
