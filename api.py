@@ -1095,8 +1095,6 @@ body.light .leaflet-control-layers {
 // Zoomknoppen linksonder op mobiel
 if (isMobile) map.zoomControl.setPosition('bottomleft');
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-
   // ⬇️ NIEUW: simpele mobiele-vlag
   const IS_MOBILE = window.matchMedia('(max-width: 768px)').matches;
 
@@ -1331,20 +1329,26 @@ setTimeout(fixMapSize, 0);
     });
     const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
-   function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
+  function setClickInfo({fgr, bodem, bodem_bron, gt, vocht}) {
   const tF = "Fysisch Geografische Regio's: " + (fgr || '—');
   const tB = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
   const tG = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
 
-  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  const set = (id, txt) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = txt;
+  };
 
-  // in-kaart legenda (desktop)
-  set('uiF', tF); set('uiB', tB); set('uiG', tG);
+  // legenda in de kaart (desktop)
+  set('uiF', tF);
+  set('uiB', tB);
+  set('uiG', tG);
+
   // mobiele legenda onder de kaart
-  set('uiF_m', tF); set('uiB_m', tB); set('uiG_m', tG);
+  set('uiF2', tF);
+  set('uiB2', tB);
+  set('uiG2', tG);
 }
-
-
 
     async function loadWms(){
       ui.meta = await (await fetch('/api/wms_meta')).json();
