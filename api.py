@@ -993,6 +993,10 @@ body.light .leaflet-control-layers {
   /* wat lucht aan de randen van knoppen */
   .leaflet-control { margin: 8px; }
 }
+/* Mobiel: verberg de in-kaart legenda (InfoCtl) */
+@media (max-width: 768px){
+  .leaflet-control.pw-ctl { display: none !important; }
+}
 
   </style>
 </head>
@@ -1328,22 +1332,18 @@ setTimeout(fixMapSize, 0);
     const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
    function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
-  // zwevende (desktop) control
-  const f1 = document.getElementById('uiF');
-  const b1 = document.getElementById('uiB');
-  const g1 = document.getElementById('uiG');
-  if (f1) f1.textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
-  if (b1) b1.textContent = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
-  if (g1) g1.textContent = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
+  const tF = "Fysisch Geografische Regio's: " + (fgr || '—');
+  const tB = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
+  const tG = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
 
-  // inline (mobiel) panel
-  const f2 = document.getElementById('uiF2');
-  const b2 = document.getElementById('uiB2');
-  const g2 = document.getElementById('uiG2');
-  if (f2) f2.textContent = "Fysisch Geografische Regio's: " + (fgr || '—');
-  if (b2) b2.textContent = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
-  if (g2) g2.textContent = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+  // in-kaart legenda (desktop)
+  set('uiF', tF); set('uiB', tB); set('uiG', tG);
+  // mobiele legenda onder de kaart
+  set('uiF_m', tF); set('uiB_m', tB); set('uiG_m', tG);
 }
+
 
 
     async function loadWms(){
