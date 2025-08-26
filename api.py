@@ -1013,13 +1013,14 @@ body.light .leaflet-control-layers {
  <div class="wrap">
   <div id="map"></div>
 
-  <!-- Mobiele legenda (staat buiten/onder de kaart); desktop: verborgen -->
-  <div id="legendInline" class="panel legend-inline" aria-live="polite">
-    <h3>Legenda &amp; info</h3>
-    <div id="uiF2" class="muted">Fysisch Geografische Regio's: —</div>
-    <div id="uiB2" class="muted">Bodem: —</div>
-    <div id="uiG2" class="muted">Gt: —</div>
+ <div id="legendMobile" class="panel panel-legend">
+  <h3>Legenda & info</h3>
+  <div class="sec">
+    <div id="mUiF">Fysisch Geografische Regio's: —</div>
+    <div id="mUiB">Bodem: —</div>
+    <div id="mUiG">Gt: —</div>
   </div>
+</div>
 
     <div class="panel panel-right">
       <div class="filters">
@@ -1336,9 +1337,24 @@ setTimeout(fixMapSize, 0);
     const infoCtl = new InfoCtl({ position: IS_MOBILE ? 'bottomright' : 'topright' }).addTo(map);
 
 function setClickInfo({fgr,bodem,bodem_bron,gt,vocht}){
-  const tF = "Fysisch Geografische Regio's: " + (fgr || '—');
-  const tB = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
-  const tG = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
+  const lineF = "Fysisch Geografische Regio's: " + (fgr || '—');
+  const lineB = 'Bodem: ' + ((bodem || '—') + (bodem_bron ? ` (${bodem_bron})` : ''));
+  const lineG = 'Gt: ' + (gt || '—') + (vocht ? ` → ${vocht}` : ' (onbekend)');
+
+  const write = (selector, text) => {
+    document.querySelectorAll(selector).forEach(el => { el.textContent = text; });
+  };
+
+  // in-kaart paneel (desktop)
+  write('#uiF', lineF);
+  write('#uiB', lineB);
+  write('#uiG', lineG);
+
+  // mobiele legenda onder de kaart
+  write('#mUiF, .mUiF', lineF);
+  write('#mUiB, .mUiB', lineB);
+  write('#mUiG, .mUiG', lineG);
+}
 
   const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
 
